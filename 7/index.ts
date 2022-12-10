@@ -57,11 +57,21 @@ const main = (): void => {
     printFileSystem();
 
     // Summarize filesystem by directory
-    let summarizedDirectories: Folder[] = summarizeDirectories();
+    let summarizedDirectories: Folder[] = summarizeFolders();
 
-    // Puzzle answer
+    // Puzzle answer 1
     let answer: number = sumFoldersSizeLessThan(summarizedDirectories, 100000);
     console.log(`Sum of size of folders less than 100000 = ${answer}`);
+
+    // Puzzle answer 2
+    let totalFilesystemSize: number = getTotalFilesystemSize(summarizedDirectories);
+    console.log(`totalFilesystemSize ${totalFilesystemSize}`);
+    const freeSpace: number = 70000000 - totalFilesystemSize;
+    const spaceNeeded: number = 30000000 - freeSpace;
+    console.log(`Free space needed = ${spaceNeeded}`);
+    let answer2: Folder = smallestFolderBiggerThan(summarizedDirectories, spaceNeeded);
+    console.log(`Smallest folder deletable = ${answer2.size}`);
+    
 };
 
 const parseTerminalLine = (line: string): void => {
@@ -121,7 +131,7 @@ const dirExistsInCurrentPath = (dirName: string): boolean => {
 };
 
 const dirExists = (dirName: string): string[] => {
-    let summarized: Folder[] = summarizeDirectories();
+    let summarized: Folder[] = summarizeFolders();
     let dirPath: string[] = [];
 
     summarized.forEach((el, i) => {
@@ -190,7 +200,20 @@ const parseTerminalOutput = (output: string): void => {
     }
 };
 
-const summarizeDirectories = (): Folder[] => {
+const smallestFolderBiggerThan = (directories: Folder[], limit: number): Folder => {
+    let closestFolder: Folder = {name: '', size: 10000000000, path: ''};
+
+    directories.forEach((e,i) => {
+        if (e.size > limit && e.size - limit < closestFolder.size - limit)
+        {
+            closestFolder = e;
+        }
+    });
+
+    return closestFolder;
+};
+
+const summarizeFolders = (): Folder[] => {
     let summarized: Folder[] = [];
     let depth:number = 0;
     let rootDirectoryName: string = '/';
@@ -241,6 +264,19 @@ const sumFoldersSizeLessThan = (folders: Folder[], sizeLimit: number): number =>
     });
 
     return sum;
+};
+
+const getTotalFilesystemSize = (folders: Folder[]): number => {
+    let size: number = 0;
+    folders.forEach((e,i) => {
+        if (e.name == '/')
+        {
+            // Found root
+            size =  e.size;
+        }
+    });
+
+    return size;
 };
 
 // Pretty print

@@ -59,10 +59,18 @@ const main = () => {
     // Pretty print built filesystem
     printFileSystem();
     // Summarize filesystem by directory
-    let summarizedDirectories = summarizeDirectories();
-    // Puzzle answer
+    let summarizedDirectories = summarizeFolders();
+    // Puzzle answer 1
     let answer = sumFoldersSizeLessThan(summarizedDirectories, 100000);
     console.log(`Sum of size of folders less than 100000 = ${answer}`);
+    // Puzzle answer 2
+    let totalFilesystemSize = getTotalFilesystemSize(summarizedDirectories);
+    console.log(`totalFilesystemSize ${totalFilesystemSize}`);
+    const freeSpace = 70000000 - totalFilesystemSize;
+    const spaceNeeded = 30000000 - freeSpace;
+    console.log(`Free space needed = ${spaceNeeded}`);
+    let answer2 = smallestFolderBiggerThan(summarizedDirectories, spaceNeeded);
+    console.log(`Smallest folder deletable = ${answer2.size}`);
 };
 const parseTerminalLine = (line) => {
     if (line[0] == '$') // Command
@@ -110,7 +118,7 @@ const dirExistsInCurrentPath = (dirName) => {
     return typeof activeDir[dirName] != 'undefined';
 };
 const dirExists = (dirName) => {
-    let summarized = summarizeDirectories();
+    let summarized = summarizeFolders();
     let dirPath = [];
     summarized.forEach((el, i) => {
         if (el.name == dirName) {
@@ -163,7 +171,16 @@ const parseTerminalOutput = (output) => {
         thisDir[activeDirectoryPath[activeDirectoryPath.length - 1]].files.push({ name: name, size: parseInt(marker) });
     }
 };
-const summarizeDirectories = () => {
+const smallestFolderBiggerThan = (directories, limit) => {
+    let closestFolder = { name: '', size: 10000000000, path: '' };
+    directories.forEach((e, i) => {
+        if (e.size > limit && e.size - limit < closestFolder.size - limit) {
+            closestFolder = e;
+        }
+    });
+    return closestFolder;
+};
+const summarizeFolders = () => {
     let summarized = [];
     let depth = 0;
     let rootDirectoryName = '/';
@@ -202,6 +219,16 @@ const sumFoldersSizeLessThan = (folders, sizeLimit) => {
         }
     });
     return sum;
+};
+const getTotalFilesystemSize = (folders) => {
+    let size = 0;
+    folders.forEach((e, i) => {
+        if (e.name == '/') {
+            // Found root
+            size = e.size;
+        }
+    });
+    return size;
 };
 // Pretty print
 const printFileSystem = () => {
